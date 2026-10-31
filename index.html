@@ -217,6 +217,12 @@
   .item:last-child { border-bottom: 0; }
   .item:active { background: var(--accent-soft); }
   .item-emoji { flex: none; font-size: 19px; width: 26px; text-align: center; }
+  .item-icon {
+    flex: none; width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center;
+    background: linear-gradient(145deg, #fff, #E7EEF6); border: 1px solid rgba(184, 145, 63, .35);
+    box-shadow: 0 3px 10px rgba(36, 70, 127, .10), inset 0 1px 0 #fff;
+  }
+  .item-icon svg { width: 30px; height: 30px; overflow: visible; }
   .item-main { flex: 1; min-width: 0; }
   .item-title { font-weight: 600; font-size: 14px; }
   .item-desc { color: var(--muted); font-size: 12.5px; }
@@ -258,6 +264,10 @@
   <defs>
     <linearGradient id="dieFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E9BE0"/><stop offset=".55" stop-color="#2F5DA6"/><stop offset="1" stop-color="#1A3466"/></linearGradient>
     <linearGradient id="dieFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FA8E6"/><stop offset="1" stop-color="#3563AE"/></linearGradient>
+    <!-- Золото для значков в «Полезном» -->
+    <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBE7AE"/><stop offset=".45" stop-color="#E3BF6B"/><stop offset="1" stop-color="#B8913F"/></linearGradient>
+    <radialGradient id="goldOrb" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#FFF8DE"/><stop offset=".35" stop-color="#F1D48A"/><stop offset=".8" stop-color="#C99B45"/><stop offset="1" stop-color="#9C7426"/></radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7FAFE"/><stop offset="1" stop-color="#BCD0EA"/></linearGradient>
   </defs>
 </svg>
 
@@ -468,37 +478,38 @@ const CONFIG = {
       name: "", about: "личный разбор" },
   ],
 
-  // Посты из канала по темам. Номер поста — последнее число в ссылке на пост
+  // Посты из канала по темам. Номер поста — последнее число в ссылке на пост.
+  // icon — золотой значок: orb, die, coins, compass, mirror, infinity, heart, rings, star, sun, letter
   useful: [
     {
       title: "Каждый день",
       items: [
-        { emoji: "🔮", title: "Энергия дня", desc: "Каждое утро в канале: что делать и чего избегать", url: "https://t.me/marina_numerologmlt" },
+        { icon: "orb", title: "Энергия дня", desc: "Каждое утро в канале: что делать и чего избегать", url: "https://t.me/marina_numerologmlt" },
       ],
     },
     {
       title: "Характер, деньги и призвание",
       items: [
-        { emoji: "🔢", title: "Какая вы цифра", desc: "Характер каждого числа от 1 до 9", url: CH + "1401" },
-        { emoji: "💰", title: "Почему я не зарабатываю, хотя стараюсь", desc: "У каждого свой способ зарабатывать", url: CH + "1412" },
-        { emoji: "🧭", title: "Что, если вы занимаетесь не своим делом", desc: "Как найти своё направление", url: CH + "1439" },
+        { icon: "die", title: "Какая вы цифра", desc: "Характер каждого числа от 1 до 9", url: CH + "1401" },
+        { icon: "coins", title: "Почему я не зарабатываю, хотя стараюсь", desc: "У каждого свой способ зарабатывать", url: CH + "1412" },
+        { icon: "compass", title: "Что, если вы занимаетесь не своим делом", desc: "Как найти своё направление", url: CH + "1439" },
       ],
     },
     {
       title: "Отношения",
       items: [
-        { emoji: "💔", title: "Почему мы попадаем в отношения с нарциссами", desc: "Что об этом говорит дата рождения", url: CH + "1204" },
-        { emoji: "🌀", title: "Почему мужчины «сливаются»", desc: "Дело не в вас, а в сценарии", url: CH + "1302" },
-        { emoji: "🤍", title: "Почему умные женщины выбирают не тех мужчин", desc: "Спасатели, холодные партнёры и другие сценарии", url: CH + "1399" },
-        { emoji: "💞", title: "Вы встретились не случайно", desc: "Что показывает матрица совместимости", url: CH + "1384" },
+        { icon: "mirror", title: "Почему мы попадаем в отношения с нарциссами", desc: "Что об этом говорит дата рождения", url: CH + "1204" },
+        { icon: "infinity", title: "Почему мужчины «сливаются»", desc: "Дело не в вас, а в сценарии", url: CH + "1302" },
+        { icon: "heart", title: "Почему умные женщины выбирают не тех мужчин", desc: "Спасатели, холодные партнёры и другие сценарии", url: CH + "1399" },
+        { icon: "rings", title: "Вы встретились не случайно", desc: "Что показывает матрица совместимости", url: CH + "1384" },
       ],
     },
     {
       title: "Тесты и практики",
       items: [
-        { emoji: "🎈", title: "Тест: насколько жив ваш внутренний ребёнок", desc: "Ответы в следующем посте", url: CH + "1023" },
-        { emoji: "✍️", title: "Практика «Точка силы»", desc: "10 минут на деньги и уверенность", url: CH + "1130" },
-        { emoji: "🕯", title: "Практика «Письмо уходящему году»", desc: "Чтобы спокойно закрыть год", url: CH + "1087" },
+        { icon: "star", title: "Тест: насколько жив ваш внутренний ребёнок", desc: "Ответы в следующем посте", url: CH + "1023" },
+        { icon: "sun", title: "Практика «Точка силы»", desc: "10 минут на деньги и уверенность", url: CH + "1130" },
+        { icon: "letter", title: "Практика «Письмо уходящему году»", desc: "Чтобы спокойно закрыть год", url: CH + "1087" },
       ],
     },
   ],
@@ -553,6 +564,85 @@ function dieSvg(n, cls) {
     <polygon points="50,3 90.7,26.5 90.7,73.5 50,97 9.3,73.5 9.3,26.5" fill="none" stroke="#C9DBF5" stroke-width="1.2"/>
     <text x="50" y="${n > 9 ? 57 : 58}" text-anchor="middle" font-family="Forum, Georgia, serif" font-size="${n > 9 ? 17 : 21}" fill="#F1D48A">${n}</text>
   </svg>`;
+}
+
+// Золотые значки для «Полезного». В CONFIG у поста пишем icon: "orb", "die", "coins" и т. д.
+const GOLD = 'fill="url(#goldFill)" stroke="#A47C2E" stroke-width="1"';
+const LINE = 'fill="none" stroke="#A47C2E" stroke-linecap="round" stroke-linejoin="round"';
+function sparkle(x, y, r) {
+  return `<path d="M${x} ${y - r}Q${x} ${y} ${x + r} ${y}Q${x} ${y} ${x} ${y + r}Q${x} ${y} ${x - r} ${y}Q${x} ${y} ${x} ${y - r}Z" fill="#E3BF6B"/>`;
+}
+function starPoints(cx, cy, R, r) {
+  return Array.from({ length: 10 }, (_, i) => {
+    const a = (i * 36 - 90) * Math.PI / 180, d = i % 2 ? r : R;
+    return `${(cx + d * Math.cos(a)).toFixed(1)},${(cy + d * Math.sin(a)).toFixed(1)}`;
+  }).join(" ");
+}
+const ICONS = {
+  // Энергия дня — золотой шар
+  orb: `<path d="M10 27h12l-1.8-3.2h-8.4z" ${GOLD}/>
+    <circle cx="16" cy="14" r="9.5" fill="url(#goldOrb)" stroke="#A47C2E" stroke-width="1"/>
+    <ellipse cx="12.4" cy="10.2" rx="2.8" ry="1.6" transform="rotate(-35 12.4 10.2)" fill="#fff" opacity=".8"/>
+    ${sparkle(26.5, 5.5, 2.6)}${sparkle(4.5, 21, 1.8)}`,
+  // Какая вы цифра — белый кубик с золотыми точками
+  die: `<g stroke="#B8913F" stroke-width="1" stroke-linejoin="round">
+      <polygon points="16,4 27,9.5 16,15 5,9.5" fill="#fff"/>
+      <polygon points="5,9.5 16,15 16,28 5,22.5" fill="#EEF3F9"/>
+      <polygon points="16,15 27,9.5 27,22.5 16,28" fill="#DFE8F3"/>
+    </g>
+    <g fill="url(#goldFill)">
+      <ellipse cx="16" cy="9.5" rx="2" ry="1.2"/>
+      <ellipse cx="8.2" cy="14.6" rx="1.2" ry="1.5"/><ellipse cx="12.8" cy="21.4" rx="1.2" ry="1.5"/>
+      <ellipse cx="18.9" cy="22.7" rx="1.2" ry="1.5"/><ellipse cx="21.5" cy="18.8" rx="1.2" ry="1.5"/><ellipse cx="24.1" cy="14.9" rx="1.2" ry="1.5"/>
+    </g>`,
+  // Деньги — стопка монет и монета на ребре
+  coins: `${[23.5, 20, 16.5].map(y => `<path d="M3.5 ${y}v3a7 2.6 0 0 0 14 0v-3" ${GOLD}/><ellipse cx="10.5" cy="${y}" rx="7" ry="2.6" fill="#F6DFA0" stroke="#A47C2E" stroke-width="1"/>`).join("")}
+    <circle cx="22.5" cy="12" r="6.5" ${GOLD}/><circle cx="22.5" cy="12" r="4.6" fill="none" stroke="#FFF3CF" stroke-width=".9"/>
+    <text x="22.5" y="14.6" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" font-weight="700" fill="#8A6A22">₽</text>`,
+  // Своё дело — компас
+  compass: `<circle cx="16" cy="16" r="11.5" fill="#fff" stroke="url(#goldFill)" stroke-width="2.2"/>
+    <circle cx="16" cy="16" r="8.6" fill="none" stroke="#B8913F" stroke-width=".6" stroke-dasharray="1 2"/>
+    <polygon points="16,6.5 18.6,16 13.4,16" fill="url(#goldFill)" stroke="#A47C2E" stroke-width=".8" stroke-linejoin="round"/>
+    <polygon points="13.4,16 18.6,16 16,25.5" fill="#C6D5EA" stroke="#8FA7C8" stroke-width=".8" stroke-linejoin="round"/>
+    <circle cx="16" cy="16" r="1.5" fill="#fff" stroke="#A47C2E" stroke-width=".8"/>`,
+  // Нарциссы — зеркальце
+  mirror: `<rect x="14.6" y="20" width="2.8" height="9" rx="1.4" ${GOLD}/>
+    <ellipse cx="16" cy="12.5" rx="8" ry="9" ${GOLD}/>
+    <ellipse cx="16" cy="12.5" rx="5.9" ry="6.9" fill="url(#glass)" stroke="#A47C2E" stroke-width=".7"/>
+    <path d="M12.8 10.5q1-3 3.8-3.8" ${LINE} stroke="#fff" stroke-width="1.3"/>
+    ${sparkle(26.5, 5, 2.2)}`,
+  // Повторяющийся сценарий — знак бесконечности
+  infinity: `<path d="M16 16c-2.6-3.6-4.6-5.2-6.7-5.2a5.2 5.2 0 0 0 0 10.4c2.1 0 4.1-1.6 6.7-5.2s4.6-5.2 6.7-5.2a5.2 5.2 0 0 1 0 10.4c-2.1 0-4.1-1.6-6.7-5.2z" fill="none" stroke="url(#goldFill)" stroke-width="3"/>
+    <path d="M16 16c-2.6-3.6-4.6-5.2-6.7-5.2a5.2 5.2 0 0 0 0 10.4c2.1 0 4.1-1.6 6.7-5.2s4.6-5.2 6.7-5.2a5.2 5.2 0 0 1 0 10.4c-2.1 0-4.1-1.6-6.7-5.2z" ${LINE} stroke-width=".6"/>
+    ${sparkle(26, 6.5, 2.2)}`,
+  // Выбор мужчины — сердце
+  heart: `<path d="M16 27C9 22 5.5 18 5.5 13.2a5.3 5.3 0 0 1 10.5-1.5 5.3 5.3 0 0 1 10.5 1.5C26.5 18 23 22 16 27z" ${GOLD}/>
+    <path d="M9.2 11.6q.8-2.4 3.3-2.6" ${LINE} stroke="#fff" stroke-width="1.4"/>`,
+  // Совместимость — два кольца
+  rings: `<circle cx="12" cy="18.5" r="7" fill="none" stroke="url(#goldFill)" stroke-width="2.6"/>
+    <circle cx="20" cy="18.5" r="7" fill="none" stroke="url(#goldFill)" stroke-width="2.6"/>
+    <path d="M15.6 12.8a7 7 0 0 1 4.4-1.3" fill="none" stroke="url(#goldFill)" stroke-width="2.6"/>
+    <polygon points="10,9.4 12,6.6 14,9.4 12,12" fill="#fff" stroke="#A47C2E" stroke-width=".8" stroke-linejoin="round"/>`,
+  // Тест — звезда
+  star: `<polygon points="${starPoints(15, 17, 11, 4.6)}" ${GOLD} stroke-linejoin="round"/>
+    ${sparkle(26.5, 6, 2.4)}${sparkle(27, 23, 1.6)}`,
+  // Точка силы — точка с лучами
+  sun: `<g stroke="url(#goldFill)" stroke-linecap="round">
+      ${Array.from({ length: 12 }, (_, i) => {
+        const a = i * 30 * Math.PI / 180, r1 = 8, r2 = i % 2 ? 11 : 13.5;
+        return `<line x1="${(16 + r1 * Math.cos(a)).toFixed(1)}" y1="${(16 + r1 * Math.sin(a)).toFixed(1)}" x2="${(16 + r2 * Math.cos(a)).toFixed(1)}" y2="${(16 + r2 * Math.sin(a)).toFixed(1)}" stroke-width="${i % 2 ? 1.4 : 2}"/>`;
+      }).join("")}
+    </g>
+    <circle cx="16" cy="16" r="5.5" fill="url(#goldOrb)" stroke="#A47C2E" stroke-width="1"/>`,
+  // Письмо уходящему году — конверт с печатью
+  letter: `<rect x="4.5" y="8.5" width="23" height="16" rx="2" fill="#fff" stroke="url(#goldFill)" stroke-width="1.8"/>
+    <path d="M5.5 9.8 16 18l10.5-8.2" ${LINE} stroke-width="1.1"/>
+    <circle cx="16" cy="18.4" r="3.6" fill="url(#goldOrb)" stroke="#A47C2E" stroke-width=".9"/>
+    ${sparkle(16, 18.4, 1.5).replace('#E3BF6B', '#FFF3CF')}`,
+};
+function itemIcon(p) {
+  return ICONS[p.icon] ? `<div class="item-icon"><svg viewBox="0 0 32 32" aria-hidden="true">${ICONS[p.icon]}</svg></div>`
+    : `<div class="item-emoji">${esc(p.emoji || "")}</div>`;
 }
 
 // Схема матрицы судьбы за аркой: два квадрата-звезда и арканы в кружках
@@ -663,7 +753,7 @@ function render() {
         <div class="list">
           ${u.items.map(p => `
             <div class="item" data-url="${esc(p.url)}">
-              <div class="item-emoji">${esc(p.emoji)}</div>
+              ${itemIcon(p)}
               <div class="item-main">
                 <div class="item-title">${esc(p.title)}</div>
                 <div class="item-desc">${esc(p.desc)}</div>

@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Марина · нумеролог</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Forum&family=Great+Vibes&family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Фирменные цвета — меняйте здесь. Сейчас как в сообществе ВК: туманный голубой, кобальт и золото */
+    --bg: #E6EEF4;                     /* фон, им же красится шапка Telegram */
+    --deep: #D3E0EA;                   /* фон внутри аватара и под картинками */
+    --card: rgba(255, 255, 255, .72);
+    --line: rgba(44, 90, 160, .14);
+    --text: #1D2B45;
+    --about: #3E4E68;
+    --muted: #6B7A92;
+    --accent: #2C5AA0;                 /* кобальт */
+    --accent-soft: rgba(44, 90, 160, .09);
+    --gold: #B8913F;                   /* золотые звёздочки и цифры */
+    --gold-light: #F1D48A;             /* золото на синем фоне */
+    --grad: linear-gradient(110deg, #3E6BB5 0%, #24467F 100%);    /* синие плашки */
+    --ring: linear-gradient(135deg, #FFFFFF 0%, #8FB0DA 50%, #2C5AA0 100%);  /* кольцо вокруг аватара */
+    --btn: linear-gradient(100deg, #3E6BB5 0%, #24467F 100%);
+    --btn-text: #FFFFFF;
+    --shadow: rgba(36, 70, 127, .22);
+    --glow-1: rgba(255, 255, 255, .95);
+    --glow-2: rgba(150, 185, 220, .5);
+    --glow-3: rgba(255, 255, 255, .7);
+    --nav-bg: rgba(230, 238, 244, .9);
+    --main-btn: #2F5DA6;               /* цвет родной кнопки Telegram (только сплошной цвет) */
+    --main-btn-text: #FFFFFF;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); overflow-x: hidden; }
+  body {
+    color: var(--text);
+    font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 14.5px; line-height: 1.5;
+    min-height: 100vh; overflow-x: hidden;
+    background:
+      radial-gradient(70% 40% at 10% 0%, var(--glow-1), transparent 70%),
+      radial-gradient(60% 35% at 100% 30%, var(--glow-2), transparent 70%),
+      radial-gradient(70% 35% at 0% 75%, var(--glow-2), transparent 70%),
+      radial-gradient(60% 30% at 100% 100%, var(--glow-3), transparent 70%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  #app { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; }
+
+  /* Цифры на фоне всей страницы — стоят на месте, пока листаешь */
+  .bg-digits { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; font-family: "Forum", Georgia, serif; line-height: 1; }
+  .bg-digits span { position: absolute; color: rgba(44, 90, 160, .07); }
+  .bg-digits span.g { color: rgba(184, 145, 63, .13); }
+
+  /* Кубики */
+  .die { display: block; filter: drop-shadow(0 10px 14px rgba(30, 60, 120, .28)); }
+  @keyframes float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-7px) rotate(var(--r, 0deg)); } }
+  .float { animation: float 6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .float { animation: none; transform: rotate(var(--r, 0deg)); } }
+
+  /* Заглушки в [квадратных скобках] подсвечены, чтобы их было видно. Когда заменим все — подсветка пропадёт сама */
+  .todo { background: rgba(233, 30, 99, .12); color: #C2185B; border-radius: 4px; padding: 0 3px; }
+
+  /* Шапка: арка с фото на фоне схемы матрицы, вокруг кубики */
+  .hero { text-align: center; }
+  /* Шапка как обложка ВК: крупно «НУМЕРОЛОГ», под ним подпись «Марина»,
+     ниже Марина у левого края, справа схема матрицы и кубики */
+  .stage { position: relative; height: 430px; margin: 0 -16px; overflow: hidden; }
+  .title { position: relative; z-index: 2; padding-top: 66px; }
+  /* «НУМЕРОЛОГ»: жирные засечки, кобальт как у кнопки «Написать мне», только темнее */
+  .role {
+    display: inline-block; font-family: "Playfair Display", Georgia, serif; font-weight: 700;
+    font-size: clamp(34px, 11.6vw, 48px); letter-spacing: .05em; text-transform: uppercase; line-height: 1.05;
+    background: linear-gradient(180deg, #2F5AA6 0%, #1D3B78 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, .9));
+  }
+  .name { margin: 0 0 0 34%; font-family: "Great Vibes", cursive; font-size: 40px; font-weight: 400; line-height: 1; color: var(--accent); text-shadow: 0 0 14px var(--bg); }
+  .matrix { position: absolute; right: -50px; top: 172px; width: 290px; height: 290px; }
+  .figure {
+    position: absolute; left: 0; bottom: 0; z-index: 1; height: 268px;
+    -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent); mask-image: linear-gradient(180deg, #000 78%, transparent);
+  }
+  .figure img { display: block; height: 100%; width: auto; }
+  .initials { position: absolute; left: 24px; bottom: 40px; font-family: "Great Vibes", cursive; font-size: 160px; line-height: 1; color: rgba(44, 90, 160, .25); }
+  .stage .die { position: absolute; z-index: 3; }
+  .d1 { right: 20px; top: 290px; width: 84px; --r: 7deg; }
+  .d2 { right: 132px; top: 206px; width: 52px; --r: -12deg; animation-delay: -1.5s; }
+  .d3 { left: 53%; top: 336px; width: 58px; --r: -18deg; animation-delay: -3s; }
+  .d4 { right: 18px; top: 176px; width: 40px; --r: 16deg; animation-delay: -4.5s; }
+  .d5 { right: 34px; top: 18px; width: 34px; --r: -10deg; animation-delay: -2.2s; opacity: .85; }
+  .d6 { left: 30px; top: 24px; width: 28px; --r: 20deg; animation-delay: -5s; opacity: .75; }
+  .plaque {
+    position: relative; z-index: 2; margin: -34px -16px 0; padding: 14px 24px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.75) 18%, rgba(255,255,255,.75) 82%, transparent);
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 23px; font-weight: 600; line-height: 1.2; color: var(--accent);
+  }
+  .tagline { position: relative; margin-top: 12px; font-family: "Great Vibes", cursive; font-size: 27px; line-height: 1.15; color: var(--accent); }
+  .about { position: relative; margin-top: 14px; color: var(--about); font-size: 14.5px; line-height: 1.6; }
+  .about b { color: var(--accent); font-weight: 600; }
+
+  /* Навигация по разделам */
+  .nav {
+    position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; overflow-x: auto;
+    margin: 18px -16px 0; padding: 12px 16px;
+    background: var(--nav-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none; padding: 8px 15px; border-radius: 999px; font-size: 13.5px; font-weight: 600; color: var(--accent);
+    background: rgba(255,255,255,.7); border: 1px solid rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(36,70,127,.08); cursor: pointer;
+  }
+  .chip:active { background: var(--accent-soft); }
+
+  section { margin-top: 30px; scroll-margin-top: 64px; }
+  h2 { font-family: "Forum", Georgia, serif; font-size: 27px; font-weight: 400; letter-spacing: .06em; text-transform: uppercase; line-height: 1.1; margin-bottom: 14px; }
+  h2 small { display: block; font-family: "Montserrat", sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); margin-top: 6px; }
+
+  /* Подарок с калькулятором */
+  .gift { position: relative; overflow: hidden; border-radius: 24px; padding: 20px 18px; background: var(--grad); color: #fff; box-shadow: 0 14px 34px var(--shadow); }
+  .gift::before {
+    content: "1 7 3 9 22 5 11"; position: absolute; left: -10px; bottom: -18px; white-space: nowrap; pointer-events: none;
+    font-family: "Forum", Georgia, serif; font-size: 92px; letter-spacing: .1em; color: rgba(255,255,255,.06);
+  }
+  .gift > * { position: relative; }
+  .gift .todo { background: rgba(255, 255, 255, .2); color: #FFE0E8; }
+  .gift .die { position: absolute; right: -14px; top: -12px; width: 96px; --r: 18deg; opacity: .95; }
+  .gift .label, .gift h3, .gift > p { padding-right: 64px; }
+  .gift .label { font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-light); }
+  .gift h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.1; margin: 6px 0 8px; }
+  .gift p { font-size: 14px; opacity: .92; }
+  .gift .btn { background: #fff; color: var(--accent); }
+  .gift .how { font-size: 12.5px; opacity: .8; margin-top: 10px; text-align: center; }
+  .calc { display: grid; gap: 10px; margin-top: 14px; }
+  .calc-input {
+    width: 100%; padding: 13px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35);
+    background: rgba(255,255,255,.14); color: #fff; font: 600 18px/1.2 "Montserrat", sans-serif; letter-spacing: .08em; text-align: center; outline: none;
+  }
+  .calc-input::placeholder { color: rgba(255,255,255,.55); }
+  .calc-input:focus { border-color: var(--gold-light); }
+  .calc-error { font-size: 13px; color: #FFD2DC; text-align: center; min-height: 0; }
+  .calc-error:empty { display: none; }
+  .result { margin-top: 16px; padding-top: 16px; border-top: 1px dashed rgba(255,255,255,.3); }
+  .nowrap { white-space: nowrap; }
+  .result-badge { display: inline-block; margin-bottom: 12px; padding: 5px 12px; border-radius: 999px; background: rgba(241, 212, 138, .18); border: 1px solid rgba(241, 212, 138, .5); color: var(--gold-light); font-size: 12.5px; font-weight: 700; }
+  .result-head { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
+  .result-num { flex: none; width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.14); border: 1px solid var(--gold-light); color: var(--gold-light); font-family: "Forum", Georgia, serif; font-size: 32px; }
+  .result-sub { font-size: 12px; opacity: .8; text-transform: uppercase; letter-spacing: .08em; }
+  .result-name { font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.1; }
+  .result-theme { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+  .result-block { font-size: 13.5px; line-height: 1.5; padding: 10px 12px; margin-bottom: 8px; border-radius: 12px; background: rgba(255,255,255,.1); }
+  .result-label { font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 3px; }
+  /* Закрытый блок: ответы размыты, видно только вопросы */
+  .teaser { margin-top: 14px; padding: 12px; border-radius: 14px; border: 1px dashed rgba(241, 212, 138, .55); }
+  .teaser-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 8px; }
+  .teaser-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; font-size: 13.5px; border-bottom: 1px solid rgba(255,255,255,.12); }
+  .teaser-row:last-of-type { border-bottom: 0; }
+  .teaser-row b { flex: none; font-weight: 600; filter: blur(5px); user-select: none; pointer-events: none; opacity: .9; }
+  .teaser-hook { margin-top: 10px; font-size: 13px; opacity: .9; }
+  .result .btn { margin-top: 14px; }
+
+  /* Направления услуг */
+  .group { scroll-margin-top: 64px; }
+  .group + .group { margin-top: 22px; }
+  .group-title { display: flex; align-items: center; gap: 10px; font-family: "Forum", Georgia, serif; font-size: 15px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; text-align: center; }
+  .group-title::before, .group-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .group-title::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .service-text { font-size: 14px; margin-bottom: 12px; }
+
+  /* Карточки услуг — «матовое стекло», цифры на фоне просвечивают */
+  .service {
+    background: var(--card); border-radius: var(--radius); padding: 15px; margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,.95); box-shadow: 0 6px 22px rgba(36,70,127,.08); cursor: pointer;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .service.open { border-color: rgba(44, 90, 160, .35); background: #fff; }
+  .service-top { display: flex; gap: 12px; align-items: center; }
+  .service-num {
+    flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
+    border: 1px solid var(--gold); background: #fff; color: var(--accent); font-family: "Forum", Georgia, serif; font-size: 17px;
+  }
+  .service-main { flex: 1; min-width: 0; }
+  .service-title { font-weight: 700; font-size: 15.5px; line-height: 1.3; }
+  .service-short { color: var(--muted); font-size: 13.5px; margin-top: 3px; }
+  .service-price { flex: none; font-weight: 700; color: var(--accent); white-space: nowrap; font-size: 14.5px; }
+  .service-price.ask { font-weight: 600; color: var(--muted); font-size: 12.5px; }
+  .service-more { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .service.open .service-more { display: block; }
+  .more-label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .service-more ul { list-style: none; margin-bottom: 12px; }
+  .service-more li { padding-left: 24px; position: relative; margin: 6px 0; font-size: 14px; }
+  .service-more li::before { content: "✦"; position: absolute; left: 2px; top: 0; color: var(--gold); font-size: 13px; }
+  .opts { display: grid; gap: 6px; margin-bottom: 14px; }
+  .opt { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); font-size: 14px; }
+  .note { font-size: 13.5px; margin-bottom: 12px; }
+  .note b { color: var(--accent); }
+
+  .btn {
+    display: block; width: 100%; text-align: center; padding: 13px 14px; border: 0; border-radius: 14px;
+    background: var(--btn); color: var(--btn-text); font-size: 14.5px; font-weight: 600; cursor: pointer;
+  }
+  .btn:active { opacity: .85; }
+  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+
+  /* Список ссылок */
+  .list + .group-title { margin-top: 20px; }
+  .list { background: var(--card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,.95); box-shadow: 0 6px 22px rgba(36,70,127,.08); overflow: hidden; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .item { display: flex; gap: 12px; align-items: center; padding: 13px 14px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .item:last-child { border-bottom: 0; }
+  .item:active { background: var(--accent-soft); }
+  .item-emoji { flex: none; font-size: 19px; width: 26px; text-align: center; }
+  .item-main { flex: 1; min-width: 0; }
+  .item-title { font-weight: 600; font-size: 14px; }
+  .item-desc { color: var(--muted); font-size: 12.5px; }
+  .item-arrow { color: var(--muted); font-size: 18px; }
+
+  /* Отзывы */
+  .reviews { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .reviews::-webkit-scrollbar { display: none; }
+  .review { flex: none; width: 84%; scroll-snap-align: start; background: var(--card); border: 1px solid rgba(255,255,255,.95); box-shadow: 0 6px 22px rgba(36,70,127,.08); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; }
+  .review .quote { font-family: "Cormorant Garamond", Georgia, serif; font-size: 46px; line-height: .6; color: var(--accent); height: 22px; }
+  .review p { font-size: 14px; flex: 1; }
+  .review .who { margin-top: 10px; font-weight: 700; font-size: 13px; }
+  .review .who span { font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: 11.5px; }
+  .shot-btn { align-self: flex-start; margin-top: 10px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+
+  /* Скрины отзывов на весь экран — открываются внутри приложения */
+  .viewer { position: fixed; inset: 0; z-index: 50; display: none; overflow-y: auto; padding: 56px 16px 40px; background: rgba(15, 25, 45, .92); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .viewer.on { display: block; }
+  .viewer img { display: block; width: 100%; max-width: 520px; margin: 0 auto 10px; border-radius: 14px; }
+  .viewer-close { position: fixed; top: 12px; right: 12px; width: 38px; height: 38px; border: 0; border-radius: 50%; background: rgba(255,255,255,.15); color: #fff; font-size: 20px; cursor: pointer; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 30px; }
+  footer p + p { margin-top: 6px; }
+  footer a { color: var(--accent); font-weight: 600; cursor: pointer; }
+
+  /* Кнопка внизу — только при просмотре в браузере. В Telegram её заменяет родная кнопка */
+  .sticky-cta { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
+  .sticky-cta .btn { max-width: 528px; margin: 0 auto; box-shadow: 0 8px 24px var(--shadow); }
+  .in-tg .sticky-cta { display: none; }
+
+  /* Картинка внутри раскрытой услуги */
+  .service-img { display: block; width: 100%; border-radius: 14px; margin-bottom: 14px; background: var(--deep); aspect-ratio: 1 / 1; object-fit: cover; }
+</style>
+</head>
+<body>
+
+<!-- Цвета для кубиков -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="dieFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E9BE0"/><stop offset=".55" stop-color="#2F5DA6"/><stop offset="1" stop-color="#1A3466"/></linearGradient>
+    <linearGradient id="dieFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FA8E6"/><stop offset="1" stop-color="#3563AE"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="bg-digits" aria-hidden="true">
+  <span style="left:-2%;top:6%;font-size:120px">7</span>
+  <span class="g" style="right:6%;top:3%;font-size:46px">21</span>
+  <span style="left:70%;top:20%;font-size:90px">3</span>
+  <span class="g" style="left:12%;top:28%;font-size:40px">9</span>
+  <span style="left:-4%;top:44%;font-size:150px">11</span>
+  <span class="g" style="right:2%;top:46%;font-size:60px">5</span>
+  <span style="left:38%;top:58%;font-size:56px">22</span>
+  <span class="g" style="left:6%;top:72%;font-size:52px">4</span>
+  <span style="right:-3%;top:68%;font-size:130px">8</span>
+  <span class="g" style="left:46%;top:86%;font-size:44px">17</span>
+  <span style="left:4%;top:90%;font-size:80px">6</span>
+</div>
+
+<div id="app"></div>
+
+<script>
+/* =====================================================================
+   ВСЁ СОДЕРЖИМОЕ ПРИЛОЖЕНИЯ — ЗДЕСЬ. Меняйте тексты, цены и ссылки.
+   Всё в [квадратных скобках] — заглушки, на экране они подсвечены розовым.
+   Ссылки на посты: в канале нажмите на пост → «Копировать ссылку».
+   ===================================================================== */
+const CH = "https://t.me/marina_numerologmlt/";
+const ME = "https://t.me/MarinaBytsun";
+
+const CONFIG = {
+  name: "Марина",
+  role: "нумеролог",
+  initials: "М",    // буква в кружке, пока нет фото
+  // Фото без фона, Марина стоит у левого края. webp лёгкий, png — запасной для старых телефонов.
+  // Если фото убрать (photo: ""), вместо него будет буква
+  photo: "photo.webp",
+  photoFallback: "photo.png",
+  // Слоганы с обложки ВК
+  headline: "Твоя дата рождения давно всё решила за тебя",
+  tagline: "Бережно веду к переменам, которые давно тебя ждут",
+  // Текст под шапкой (черновик по постам из канала — показать Марине). Слова в <b>…</b> выделяются синим
+  about: "Смотрю по дате рождения, почему повторяются одни и те же сценарии в отношениях и деньгах, где ваша сила и что мешает. Для меня нумерология <b>не про предсказание судьбы</b>, а про то, чтобы лучше понять себя.",
+
+  bookingUrl: ME,
+  bookingLabel: "Написать мне",
+
+  footerNote: "Пишите с любым вопросом, отвечаю сама",
+  footerLinks: [
+    { label: "Канал", url: "https://t.me/marina_numerologmlt" },
+    { label: "Написать лично", url: ME },
+  ],
+
+  // Подарок — калькулятор энергии года.
+  // Считаем так: день рождения (если больше 22 — складываем цифры) + месяц + сумма цифр года,
+  // результат сводим к числу от 1 до 22. ФОРМУЛУ И ТЕКСТЫ СВЕРИТЬ С МАРИНОЙ.
+  // Слово «аркан» на экране не используем.
+  gift: {
+    year: 2027,       // на какой год считаем
+    label: "🎁 Подарок",
+    title: "Каким будет ваш 2027 год",
+    text: "Введите дату рождения и бесплатно узнайте, что 2027 год готовит вам в деньгах и в отношениях. Результат появится сразу здесь.",
+    resultBadge: "🎁 Это ваш подарок",
+    placeholder: "ДД.ММ.ГГГГ",
+    button: "Рассчитать",
+    // Цена на кнопке и в закрытом блоке берётся из услуги «Прогноз на личный год» (id: "year")
+    resultButton: "Хочу полный прогноз",
+    how: "Чтобы записаться на полный прогноз, напишите мне слово ГОД",
+    url: ME,
+    // Закрытый блок после расчёта: ответы размыты, чтобы захотелось узнать полный прогноз.
+    // Под размытием честно написано «расскажу в прогнозе»
+    hook: "У каждого года есть свой поворотный месяц. Какой он у вас и как его не упустить, я расскажу в полном прогнозе.",
+    teaser: ["Ваш поворотный месяц", "Когда ждать денег", "Где осторожнее в отношениях", "С чего начать год"],
+    // name — название, text — тема года, money — деньги, love — отношения
+    arcana: [
+      { name: "Маг", text: "Год начинаний. Многое получится просто потому, что вы решитесь.",
+        money: "Деньги приходят через инициативу: новый проект, подработка, своё дело. Чем смелее вы заявляете о себе, тем больше возможностей.",
+        love: "Год лёгких знакомств. Если вы в паре, хорошо вместе начать что-то новое." },
+      { name: "Жрица", text: "Тихий год, когда ответы приходят изнутри. Интуиция будет точнее любых советов.",
+        money: "Доход растёт спокойно, через знания и опыт. Время копить и учиться, а не рисковать.",
+        love: "Отношения проверяются на доверие. Интуиция подскажет, кто рядом всерьёз." },
+      { name: "Императрица", text: "Год роста и изобилия. Всё, что вы создаёте с любовью, начинает расти.",
+        money: "Денежный год. Хорошо вкладываться в дом, красоту, своё дело: деньги любят, когда вы себя радуете.",
+        love: "Много тепла и заботы. Хорошее время для семьи, свадьбы, детей." },
+      { name: "Император", text: "Год порядка и опоры. Время строить то, что будет держать вас годами.",
+        money: "Рост через порядок: повышение, крупная цель, финансовая подушка.",
+        love: "Хочется определённости. Отношения выходят на серьёзный уровень, или становится ясно, что пора расходиться." },
+      { name: "Иерофант", text: "Год учёбы и наставников. Рядом появятся люди, у которых стоит учиться.",
+        money: "Вложения в знания окупятся. Деньги может принести то, чему вы научитесь в этом году.",
+        love: "Год серьёзных решений: официальные отношения, знакомство с семьёй, общие планы." },
+      { name: "Влюблённые", text: "Год выбора. Решения «или — или» придётся принимать сердцем.",
+        money: "Перед вами окажутся два пути. Правильный выбор покажет, где ваши деньги.",
+        love: "Главная тема года. Возможна встреча, после которой многое изменится, или важный выбор в паре." },
+      { name: "Колесница", text: "Год движения. Энергия толкает вперёд, стоять на месте не получится.",
+        money: "Доход через движение: поездки, новые направления, смелые шаги в работе.",
+        love: "Партнёру придётся поспевать за вами. Хорошо путешествовать вдвоём." },
+      { name: "Справедливость", text: "Год баланса. Всё, что вы делали раньше, начнёт возвращаться.",
+        money: "Честный труд окупается, долги возвращаются. Время навести порядок в документах и расходах.",
+        love: "Всё тайное становится явным. То, что держалось на обидах, проявится." },
+      { name: "Отшельник", text: "Год, чтобы замедлиться и разобраться в себе.",
+        money: "Не про быстрые деньги, а про поиск своего дела. Ответ на вопрос «чем я хочу заниматься» может прийти именно сейчас.",
+        love: "Может хотеться побыть одной. Это время понять, кто вам на самом деле нужен." },
+      { name: "Колесо Фортуны", text: "Год перемен и неожиданных поворотов. Удача любит тех, кто готов двигаться.",
+        money: "Возможны неожиданные деньги и резкие повороты в работе. Главное, вовремя заметить шанс.",
+        love: "Судьбоносные встречи и люди из прошлого, которые вдруг напомнят о себе." },
+      { name: "Сила", text: "Год энергии. Сил хватит на многое, если направить их в одно русло.",
+        money: "Деньги через упорство и смелость взяться за большое.",
+        love: "Страсть и сильные эмоции. Важно не бороться с партнёром, а быть на одной стороне." },
+      { name: "Повешенный", text: "Год, когда стоит посмотреть на привычное под другим углом.",
+        money: "Финансы могут притормозить. Хорошее время пересмотреть, на что уходят силы и деньги.",
+        love: "Пора перестать жертвовать собой. Станет видно, где вы отдаёте больше, чем получаете." },
+      { name: "Трансформация", text: "Год обновления. Что-то уходит, чтобы освободить место новому.",
+        money: "Возможна смена работы, профессии или источника дохода.",
+        love: "Время честно посмотреть, что в отношениях живое, а что держится по привычке." },
+      { name: "Умеренность", text: "Спокойный год восстановления и баланса.",
+        money: "Ровный год без скачков. Хорошо копить и вкладываться в здоровье.",
+        love: "Мягкий год в паре. Хорошее время, чтобы помириться и договориться." },
+      { name: "Дьявол", text: "Год желаний и соблазнов. Энергии много, важно, куда вы её направите.",
+        money: "Может стать одним из самых денежных лет, если не поддаваться соблазнам. Хорошо для продаж и своего дела.",
+        love: "Сильное притяжение. Важно не путать страсть с зависимостью." },
+      { name: "Башня", text: "Год перестройки. Рушится то, что держалось на честном слове.",
+        money: "Возможна перестройка в работе. На месте старого получится построить прочнее.",
+        love: "Отношения проверяются на прочность. Крепкие станут ещё крепче." },
+      { name: "Звезда", text: "Год, когда вас замечают.",
+        money: "Деньги через проявленность: блог, творчество, публичность.",
+        love: "Год романтики и надежд. Будьте открыты, на вас смотрят." },
+      { name: "Луна", text: "Год интуиции и тонких ощущений.",
+        money: "Не время для рискованных вложений. Проверяйте договорённости и не верьте обещаниям на слово.",
+        love: "Много чувств и сомнений. Говорите прямо, а не додумывайте за другого." },
+      { name: "Солнце", text: "Год радости и успеха. Энергии много на всё.",
+        money: "Время признания: повышение, запуск, крупные покупки.",
+        love: "Тёплый счастливый год, особенно для семьи и детей." },
+      { name: "Суд", text: "Год рода и семьи. Пересмотр ценностей и важные разговоры.",
+        money: "Деньги могут прийти через семью: общее дело, помощь родных, наследство.",
+        love: "Год важных семейных решений." },
+      { name: "Мир", text: "Год расширения и новых горизонтов.",
+        money: "Рост масштаба: новые города, клиенты издалека, выход за привычные рамки.",
+        love: "Знакомства в поездках. Возможен переезд вдвоём." },
+      { name: "Шут", text: "Год свободы и лёгкости.",
+        money: "Деньги приходят легко и так же легко уходят. Пробуйте новое, но держите подушку.",
+        love: "Лёгкость и флирт. Хорошо для новых знакомств без лишних ожиданий." },
+    ],
+  },
+
+  // Строка под заголовком «Услуги»
+  servicesNote: "Разбор приходит голосовыми сообщениями и в PDF, сроки обсуждаем лично. Нажмите на услугу, чтобы прочитать подробнее",
+
+  // Услуги по направлениям. У каждого направления своя кнопка в меню сверху, номера 01, 02… ставятся сами.
+  // price — на карточке; note — строка про стоимость; text — описание; button — своя надпись на кнопке;
+  // image — картинка внутри услуги (лежит рядом, например cards/matrix.jpg)
+  groups: [
+    {
+      id: "self", chip: "О себе", title: "О себе и своём пути",
+      services: [
+        { title: "Разбор личности по дате рождения", short: "Сильные стороны, таланты, характер", price: "3 500 ₽",
+          text: "Узнайте свои сильные стороны, таланты, особенности характера и скрытый потенциал. Разберу, что заложено в вашей дате рождения." },
+        { title: "Предназначение, таланты и финансовый потенциал", short: "В чём ваша сила и через что приходят деньги", price: "4 500 ₽",
+          text: "В чём ваша сила, где раскрываются таланты и через что можно реализовать свой денежный потенциал? Подскажу направления, которые стоит развивать." },
+        { title: "Полный разбор Матрицы судьбы", short: "Все сферы жизни в одном разборе", price: "7 500 ₽",
+          text: "Все сферы жизни: отношения, деньги, предназначение, таланты, родовые программы и кармические задачи. Вы узнаете свои ресурсы, точки роста и получите рекомендации." },
+        { title: "Глубокий разбор жизни", short: "Комплексный анализ по разным методикам", price: "10 000 ₽",
+          text: "Полный комплексный анализ по разным нумерологическим методикам. Максимум информации о себе, своём пути, возможностях и жизненных задачах." },
+      ],
+    },
+    {
+      id: "love", chip: "Отношения", title: "Отношения и семья",
+      services: [
+        { title: "Разбор личной сферы отношений", short: "Ваш личный код отношений", price: "3 500 ₽",
+          text: "Какой партнёр вам подходит, что важно для вас в любви и какие сценарии могут повторяться? Разберу ваш личный код отношений." },
+        { title: "Разбор ребёнка: характер, способности и таланты", short: "Чтобы лучше понимать своего ребёнка", price: "4 500 ₽",
+          text: "Поможет лучше понять своего ребёнка, раскрыть его сильные стороны, способности и природные таланты." },
+        { title: "Совместимость пары", short: "Сила вашего союза и его сложности", price: "6 000 ₽",
+          text: "Что вас притягивает друг к другу, в чём сила вашего союза и какие сложности могут возникать? Разберу особенности отношений и задачи пары." },
+      ],
+    },
+    {
+      id: "forecast", chip: "Прогнозы", title: "Прогнозы и даты",
+      services: [
+        { title: "Подбор благоприятных дат", short: "Для поездок, событий и начинаний", price: "от 1 500 ₽", note: "Стоимость: <b>1 500 – 2 000 ₽</b>",
+          text: "Подберу подходящие даты для поездок, важных событий, начинаний и других планов." },
+        { title: "Счастливые числа по дате рождения", short: "Ваши личные числа и их значение", price: "2 000 ₽",
+          text: "Ваши личные числа и их значение. Узнайте, какие числа могут стать вашими дополнительными ориентирами." },
+        { title: "Энергии и рекомендации на месяц", short: "Возможности и задачи месяца", price: "2 000 ₽",
+          text: "Главные энергии месяца, его возможности и задачи, а также персональные рекомендации, чтобы прожить этот период осознаннее." },
+        { id: "year", title: "Прогноз на личный год", short: "Ваш навигатор на 12 месяцев", price: "5 000 ₽",
+          text: "Какие темы выйдут на первый план, где откроются возможности и на что обратить внимание в течение года? Ваш личный навигатор на 12 месяцев." },
+      ],
+    },
+    {
+      id: "custom", chip: "Свой вопрос", title: "Свой вопрос",
+      services: [
+        { title: "Индивидуальный разбор по вашему запросу", short: "Формат под вашу ситуацию", price: "", button: "Обсудить запрос",
+          text: "Есть вопрос, на который давно хочется найти ответ? Подберу формат разбора именно под вашу ситуацию." },
+      ],
+    },
+  ],
+
+  // Отзывы из канала. text — слова клиента (с сокращениями); shots — скрины в папке reviews,
+  // открываются внутри приложения по кнопке «Смотреть скрин»; name можно оставить пустым
+  reviews: [
+    { text: "Ваш расчёт на год просто супер! Сначала отнеслась скептически, заказала ради интереса. Но всё начало сбываться, хотя вы говорили, что это не предсказание и всё зависит от меня. Я переехала, хотя даже в мыслях не было. Сменила сферу деятельности, стала относиться ко всему проще. И спасибо вашим практикам, они реально работают!",
+      name: "", about: "прогноз на год", shots: ["reviews/year-1.jpg"] },
+    { text: "Спасибо за рекомендации на год. Это был толчок к изменениям! С мужем развелась, но через три месяца встретила очень хорошего человека, который меня уважает и ценит. Работу тоже сменила. Раньше бы не рискнула, а сейчас посмотрела свой благоприятный период и погнала!",
+      name: "", about: "прогноз на год", shots: ["reviews/year-2.jpg"] },
+    { text: "Я делала все твои практики, шло время. И теперь я уже год в счастливых отношениях, где меня уважают, заботятся, любят и боятся потерять. Спасибо, что делаешь женщин счастливыми!",
+      name: "", about: "отношения", shots: ["reviews/love-2.jpg", "reviews/love-1.jpg", "reviews/love-3.jpg"] },
+    { text: "Думала, что не сбылось то, что меня больше всего интересовало в этом году, но на днях узнала, что беременна! Ты сказала, что к концу года жди. Я много работала над собой, но видимо помогло, хотя уже не надеялась. Я очень тебе благодарна!",
+      name: "", about: "прогноз на год", shots: ["reviews/year-3.jpg"] },
+    { text: "Сколько раз я хотела и всё никак не могла решиться! Но я решилась. Благодаря твоим рекомендациям и поддержке я на пути к себе. Столько всего начало происходить в моей жизни, но точно знаю, что я на правильном пути. Твои расшифровки в самое сердечко!",
+      name: "", about: "личный разбор" },
+  ],
+
+  // Посты из канала по темам. Номер поста — последнее число в ссылке на пост
+  useful: [
+    {
+      title: "Каждый день",
+      items: [
+        { emoji: "🔮", title: "Энергия дня", desc: "Каждое утро в канале: что делать и чего избегать", url: "https://t.me/marina_numerologmlt" },
+      ],
+    },
+    {
+      title: "Характер, деньги и призвание",
+      items: [
+        { emoji: "🔢", title: "Какая вы цифра", desc: "Характер каждого числа от 1 до 9", url: CH + "1401" },
+        { emoji: "💰", title: "Почему я не зарабатываю, хотя стараюсь", desc: "У каждого свой способ зарабатывать", url: CH + "1412" },
+        { emoji: "🧭", title: "Что, если вы занимаетесь не своим делом", desc: "Как найти своё направление", url: CH + "1439" },
+      ],
+    },
+    {
+      title: "Отношения",
+      items: [
+        { emoji: "💔", title: "Почему мы попадаем в отношения с нарциссами", desc: "Что об этом говорит дата рождения", url: CH + "1204" },
+        { emoji: "🌀", title: "Почему мужчины «сливаются»", desc: "Дело не в вас, а в сценарии", url: CH + "1302" },
+        { emoji: "🤍", title: "Почему умные женщины выбирают не тех мужчин", desc: "Спасатели, холодные партнёры и другие сценарии", url: CH + "1399" },
+        { emoji: "💞", title: "Вы встретились не случайно", desc: "Что показывает матрица совместимости", url: CH + "1384" },
+      ],
+    },
+    {
+      title: "Тесты и практики",
+      items: [
+        { emoji: "🎈", title: "Тест: насколько жив ваш внутренний ребёнок", desc: "Ответы в следующем посте", url: CH + "1023" },
+        { emoji: "✍️", title: "Практика «Точка силы»", desc: "10 минут на деньги и уверенность", url: CH + "1130" },
+        { emoji: "🕯", title: "Практика «Письмо уходящему году»", desc: "Чтобы спокойно закрыть год", url: CH + "1087" },
+      ],
+    },
+  ],
+};
+
+/* ============================ Логика ============================ */
+const tg = window.Telegram && window.Telegram.WebApp;
+const inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function haptic() {
+  if (inTelegram && tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+}
+
+// Ссылки на Telegram: сначала закрываем приложение, сразу после — открываем ссылку.
+// Если открыть ссылку первой, на iPhone приложение остаётся поверх.
+function openUrl(url) {
+  haptic();
+  if (!inTelegram) { window.open(url, "_blank"); return; }
+  if (url.startsWith("https://t.me/")) {
+    tg.close();
+    tg.openTelegramLink(url);
+  } else {
+    tg.openLink(url);
+  }
+}
+
+// Подсвечиваем заглушки вида [текст] в видимом тексте страницы
+function markTodos(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) if (/\[[^\]]+\]/.test(walker.currentNode.nodeValue)) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    const span = document.createElement("span");
+    span.innerHTML = esc(node.nodeValue).replace(/\[[^\]]+\]/g, m => `<span class="todo">${m}</span>`);
+    node.replaceWith(...span.childNodes);
+  });
+}
+
+// Кубик-двадцатигранник с золотой цифрой
+function dieSvg(n, cls) {
+  return `<svg class="die ${cls}" viewBox="0 0 100 100" aria-hidden="true">
+    <polygon points="50,3 90.7,26.5 90.7,73.5 50,97 9.3,73.5 9.3,26.5" fill="url(#dieFill)"/>
+    <polygon points="50,3 90.7,26.5 50,24" fill="#fff" opacity=".18"/>
+    <polygon points="50,3 50,24 9.3,26.5" fill="#fff" opacity=".28"/>
+    <polygon points="26,66 50,97 74,66" fill="#000" opacity=".12"/>
+    <polygon points="50,24 74,66 26,66" fill="url(#dieFace)"/>
+    <path d="M50 24 9.3 26.5M50 24V3M50 24l40.7 2.5M74 66l16.7-39.5M74 66l16.7 7.5M74 66 50 97M26 66l24 31M26 66 9.3 73.5M26 66 9.3 26.5M50 24l24 42H26z" stroke="#B7D0F2" stroke-width=".9" fill="none" opacity=".8"/>
+    <polygon points="50,3 90.7,26.5 90.7,73.5 50,97 9.3,73.5 9.3,26.5" fill="none" stroke="#C9DBF5" stroke-width="1.2"/>
+    <text x="50" y="${n > 9 ? 57 : 58}" text-anchor="middle" font-family="Forum, Georgia, serif" font-size="${n > 9 ? 17 : 21}" fill="#F1D48A">${n}</text>
+  </svg>`;
+}
+
+// Схема матрицы судьбы за аркой: два квадрата-звезда и арканы в кружках
+function matrixSvg() {
+  const pts = [[165, 22, 3], [308, 165, 21], [165, 308, 9], [22, 165, 11], [64, 64, 7], [266, 64, 17], [266, 266, 4], [64, 266, 22]];
+  return `<svg class="matrix" viewBox="0 0 330 330" aria-hidden="true">
+    <g fill="none" stroke="rgba(44,90,160,.22)" stroke-width="1">
+      <circle cx="165" cy="165" r="143" stroke-dasharray="2 5"/>
+      <rect x="64" y="64" width="202" height="202"/>
+      <polygon points="165,22 308,165 165,308 22,165"/>
+      <path d="M165 22V308M22 165H308M64 64 266 266M266 64 64 266"/>
+    </g>
+    ${pts.map(([x, y, n], i) => `
+      <circle cx="${x}" cy="${y}" r="13" fill="${i % 3 ? "#fff" : "#F1D48A"}" stroke="${i % 3 ? "rgba(44,90,160,.35)" : "#B8913F"}"/>
+      <text x="${x}" y="${y + 4.5}" text-anchor="middle" font-family="Forum, Georgia, serif" font-size="12" fill="#2C5AA0">${n}</text>`).join("")}
+  </svg>`;
+}
+
+function render() {
+  const c = CONFIG;
+  const has = arr => Array.isArray(arr) && arr.length > 0;
+  let num = 0;
+
+  document.getElementById("app").innerHTML = `
+    <header class="hero">
+      <div class="stage">
+        ${matrixSvg()}
+        ${c.photo ? `<picture class="figure"><source srcset="${esc(c.photo)}" type="image/webp"><img src="${esc(c.photoFallback || c.photo)}" alt="${esc(c.name)}"></picture>` : `<div class="initials">${esc(c.initials)}</div>`}
+        <div class="title">
+          ${c.role ? `<div class="role">${esc(c.role)}</div>` : ""}
+          <h1 class="name">${esc(c.name)}</h1>
+        </div>
+        ${[[9, "d1"], [3, "d2"], [7, "d3"], [21, "d4"], [5, "d5"], [11, "d6"]].map(([n, cls]) => dieSvg(n, cls + " float")).join("")}
+      </div>
+      <div class="plaque">${esc(c.headline)}</div>
+      ${c.tagline ? `<div class="tagline">${esc(c.tagline)}</div>` : ""}
+      ${c.about ? `<p class="about">${c.about}</p>` : ""}
+    </header>
+
+    <nav class="nav">
+      ${c.gift ? `<a class="chip" data-go="gift">Подарок</a>` : ""}
+      ${c.groups.map(g => `<a class="chip" data-go="${esc(g.id)}">${esc(g.chip)}</a>`).join("")}
+      ${has(c.reviews) ? `<a class="chip" data-go="reviews">Отзывы</a>` : ""}
+      ${has(c.useful) ? `<a class="chip" data-go="useful">Полезное</a>` : ""}
+    </nav>
+
+    ${c.gift ? `
+    <section id="gift">
+      <div class="gift">
+        ${dieSvg(22, "float")}
+        <div class="label">${esc(c.gift.label)}</div>
+        <h3>${esc(c.gift.title)}</h3>
+        <p>${esc(c.gift.text)}</p>
+        <div class="calc">
+          <input id="dob" class="calc-input" type="text" inputmode="numeric" autocomplete="bday" maxlength="10" placeholder="${esc(c.gift.placeholder)}">
+          <button class="btn" data-calc>${esc(c.gift.button)}</button>
+          <div class="calc-error" id="calc-error"></div>
+        </div>
+        <div id="calc-result"></div>
+      </div>
+    </section>` : ""}
+
+    <section id="services">
+      <h2>Услуги<small>${esc(c.servicesNote)}</small></h2>
+      ${c.groups.map((g, gi) => `
+        <div class="group" id="${esc(g.id)}">
+          <h3 class="group-title">${esc(g.title)}</h3>
+          ${g.services.map((s, i) => `
+            <div class="service" data-service="${gi}-${i}"${s.id ? ` id="service-${esc(s.id)}"` : ""}>
+              <div class="service-top">
+                <div class="service-num">${String(++num).padStart(2, "0")}</div>
+                <div class="service-main">
+                  <div class="service-title">${esc(s.title)}</div>
+                  <div class="service-short">${esc(s.short)}</div>
+                </div>
+                <div class="service-price${s.price ? "" : " ask"}">${s.price ? esc(s.price) : "по запросу"}</div>
+              </div>
+              <div class="service-more">
+                ${s.image ? `<img class="service-img" src="${esc(s.image)}" alt="${esc(s.title)}" loading="lazy">` : ""}
+                ${s.text ? `<p class="service-text">${esc(s.text)}</p>` : ""}
+                ${s.note ? `<div class="note">${s.note}</div>` : ""}
+                ${has(s.details) ? `<div class="more-label">Что входит</div><ul>${s.details.map(d => `<li>${esc(d)}</li>`).join("")}</ul>` : ""}
+                <button class="btn" data-url="${esc(c.bookingUrl)}">${esc(s.button || (s.price ? "Записаться" : "Узнать цену"))}</button>
+              </div>
+            </div>`).join("")}
+        </div>`).join("")}
+    </section>
+
+    ${has(c.reviews) ? `
+    <section id="reviews">
+      <h2>Отзывы<small>Листайте вбок →</small></h2>
+      <div class="reviews">
+        ${c.reviews.map((r, i) => `
+          <div class="review">
+            <div class="quote">“</div>
+            <p>${esc(r.text)}</p>
+            <div class="who">${r.name ? `${esc(r.name)} <span>· ${esc(r.about)}</span>` : `<span>${esc(r.about)}</span>`}</div>
+            ${has(r.shots) ? `<button class="shot-btn" data-shots="${i}">Смотреть скрин</button>` : ""}
+          </div>`).join("")}
+      </div>
+    </section>` : ""}
+
+    ${has(c.useful) ? `
+    <section id="useful">
+      <h2>Полезное<small>Посты откроются в канале ↗</small></h2>
+      ${c.useful.map(u => `
+        <h3 class="group-title">${esc(u.title)}</h3>
+        <div class="list">
+          ${u.items.map(p => `
+            <div class="item" data-url="${esc(p.url)}">
+              <div class="item-emoji">${esc(p.emoji)}</div>
+              <div class="item-main">
+                <div class="item-title">${esc(p.title)}</div>
+                <div class="item-desc">${esc(p.desc)}</div>
+              </div>
+              <div class="item-arrow">›</div>
+            </div>`).join("")}
+        </div>`).join("")}
+    </section>` : ""}
+
+    <footer>
+      <p>${esc(c.footerNote)}</p>
+      <p>${(c.footerLinks || []).map(l => `<a data-url="${esc(l.url)}">${esc(l.label)}</a>`).join(" · ")}</p>
+    </footer>
+
+    <div class="sticky-cta"><button class="btn" data-url="${esc(c.bookingUrl)}">${esc(c.bookingLabel)}</button></div>
+
+    <div class="viewer" id="viewer"><button class="viewer-close" data-close aria-label="Закрыть">✕</button><div id="viewer-imgs"></div></div>
+  `;
+  markTodos(document.getElementById("app"));
+}
+
+/* --------- Калькулятор энергии года --------- */
+const digitSum = n => String(n).split("").reduce((a, d) => a + +d, 0);
+// Сводим число к аркану от 1 до 22: пока больше 22 — складываем цифры
+function toArcana(n) {
+  while (n > 22) n = digitSum(n);
+  return n;
+}
+
+function yearEnergy(day, month, year) {
+  return toArcana(toArcana(day) + month + toArcana(digitSum(year)));
+}
+
+function parseDate(str) {
+  const m = str.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (!m) return null;
+  const [day, month, year] = [+m[1], +m[2], +m[3]];
+  const d = new Date(year, month - 1, day);
+  if (d.getDate() !== day || d.getMonth() !== month - 1 || year < 1920 || d > new Date()) return null;
+  return { day, month, year };
+}
+
+
+function calculate() {
+  const g = CONFIG.gift;
+  const err = document.getElementById("calc-error");
+  const out = document.getElementById("calc-result");
+  const date = parseDate(document.getElementById("dob").value);
+  if (!date) {
+    err.textContent = "Проверьте дату: нужно в виде 15.03.1990";
+    out.innerHTML = "";
+    return;
+  }
+  err.textContent = "";
+  document.getElementById("dob").blur();
+  const n = yearEnergy(date.day, date.month, g.year);
+  const a = g.arcana[n - 1];
+  const full = CONFIG.groups.flatMap(gr => gr.services).find(s => s.id === "year");
+  const price = full && full.price ? ` <span class="nowrap">· ${esc(full.price)}</span>` : "";
+  out.innerHTML = `
+    <div class="result">
+      <div class="result-badge">${esc(g.resultBadge)}</div>
+      <div class="result-head">
+        <div class="result-num">${n}</div>
+        <div>
+          <div class="result-sub">Ваш ${g.year} год</div>
+          <div class="result-name">${esc(a.name)}</div>
+        </div>
+      </div>
+      <p class="result-theme">${esc(a.text)}</p>
+      <div class="result-block"><div class="result-label">💰 Деньги</div>${esc(a.money)}</div>
+      <div class="result-block"><div class="result-label">❤️ Отношения</div>${esc(a.love)}</div>
+      <div class="teaser">
+        <div class="teaser-title">🔒 Полный прогноз на ${g.year}${price}</div>
+        ${g.teaser.map(t => `<div class="teaser-row"><span>${esc(t)}</span><b>расскажу в прогнозе</b></div>`).join("")}
+        <p class="teaser-hook">${esc(g.hook)}</p>
+      </div>
+      <button class="btn" data-open="year">${esc(g.resultButton)}${price}</button>
+      <div class="how">${esc(g.how)}</div>
+    </div>`;
+  markTodos(out);
+  if (inTelegram && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+  out.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// Точки в дате ставятся сами: 15031990 → 15.03.1990
+function maskDate(input) {
+  const d = input.value.replace(/\D/g, "").slice(0, 8);
+  input.value = [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join(".");
+}
+
+// Просмотр скринов отзывов. В Telegram закрывается и родной кнопкой «Назад»
+function openViewer(shots) {
+  document.getElementById("viewer-imgs").innerHTML = shots.map(s => `<img src="${esc(s)}" alt="Скрин отзыва">`).join("");
+  const v = document.getElementById("viewer");
+  v.scrollTop = 0;
+  v.classList.add("on");
+  document.body.style.overflow = "hidden";
+  if (inTelegram) { tg.MainButton.hide(); tg.BackButton.show(); }
+}
+
+function closeViewer() {
+  document.getElementById("viewer").classList.remove("on");
+  document.body.style.overflow = "";
+  if (inTelegram) { tg.BackButton.hide(); tg.MainButton.show(); }
+}
+
+function bindEvents() {
+  if (inTelegram) tg.BackButton.onClick(closeViewer);
+  const dob = document.getElementById("dob");
+  if (dob) {
+    dob.addEventListener("input", () => maskDate(dob));
+    dob.addEventListener("keydown", e => { if (e.key === "Enter") calculate(); });
+  }
+
+  document.addEventListener("click", e => {
+    const link = e.target.closest("[data-url]");
+    if (link) { e.stopPropagation(); openUrl(link.dataset.url); return; }
+
+    if (e.target.closest("[data-calc]")) { haptic(); calculate(); return; }
+
+    const shots = e.target.closest("[data-shots]");
+    if (shots) { haptic(); openViewer(CONFIG.reviews[+shots.dataset.shots].shots); return; }
+    if (e.target.closest("[data-close]") || e.target.id === "viewer" || e.target.id === "viewer-imgs") { closeViewer(); return; }
+
+    // Кнопка из калькулятора: раскрываем нужную услугу и прокручиваем к ней
+    const open = e.target.closest("[data-open]");
+    if (open) {
+      haptic();
+      const card = document.getElementById("service-" + open.dataset.open);
+      card.classList.add("open");
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
+    const go = e.target.closest("[data-go]");
+    if (go) { haptic(); document.getElementById(go.dataset.go).scrollIntoView({ behavior: "smooth" }); return; }
+
+    const card = e.target.closest("[data-service]");
+    if (card) { haptic(); card.classList.toggle("open"); }
+  });
+}
+
+function initTelegram() {
+  if (!inTelegram) return;
+  document.body.classList.add("in-tg");
+  tg.ready();
+  tg.expand();
+  const css = getComputedStyle(document.documentElement);
+  const bg = css.getPropertyValue("--bg").trim();
+  tg.setHeaderColor(bg);
+  tg.setBackgroundColor(bg);
+
+  // Родная кнопка Telegram внизу экрана
+  tg.MainButton.setParams({
+    text: CONFIG.bookingLabel,
+    color: css.getPropertyValue("--main-btn").trim(),
+    text_color: css.getPropertyValue("--main-btn-text").trim(),
+  });
+  tg.MainButton.onClick(() => openUrl(CONFIG.bookingUrl));
+  tg.MainButton.show();
+}
+
+render();
+bindEvents();
+initTelegram();
+</script>
+</body>
+</html>
